@@ -1,0 +1,2 @@
+/Users/tb/Documents/flutttercode/tb_flutter_toolkit/example/android/app/.cxx/Debug/5g6h2x2a/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/tb/Documents/flutttercode/tb_flutter_toolkit/example/android/app/.cxx/Debug/5g6h2x2a/armeabi-v7a/CMakeFiles/rebuild_cache.dir

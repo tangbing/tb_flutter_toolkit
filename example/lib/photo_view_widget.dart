@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tb_flutter_toolkit/photo/gm_image.dart';
-import 'package:tb_flutter_toolkit/photo/photo_view_gallery_widget.dart';
+import 'package:tb_flutter_toolkit/tb_flutter_toolkit.dart';
 
 class PhotoViewWidget extends StatelessWidget {
   PhotoViewWidget({super.key});
@@ -16,12 +15,12 @@ class PhotoViewWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('PhotoViewWidget'),
+        title: const Text('PhotoViewWidget'),
       ),
       body: GridView.builder(
           itemCount: urls.length,
           gridDelegate:
-          SliverGridDelegateWithFixedCrossAxisCount(
+          const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               mainAxisSpacing: 20,
               crossAxisSpacing: 20,

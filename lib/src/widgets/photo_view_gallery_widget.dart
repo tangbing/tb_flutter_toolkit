@@ -3,12 +3,15 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:dio/dio.dart';
 
+/*
+ navigator?.push(FadeAnimationRoute(page: PhotoViewGalleryWidget(images: dynamicModel?.picUrls ?? [], index: index)));
 
-// import 'package:http/http.dart' as http;
+ */
 
 class PhotoViewGalleryWidget extends StatefulWidget {
   //List images = [];
@@ -16,12 +19,15 @@ class PhotoViewGalleryWidget extends StatefulWidget {
   int index = 0;
   String? heroTag;
   PageController? controller;
+  bool isLocalPhoto;
+
 
   PhotoViewGalleryWidget(
       {Key? key,
       required this.images,
       this.index = 0,
-      this.controller,
+        this.isLocalPhoto = false,
+        this.controller,
       this.heroTag})
       : super(key: key) {
     controller = PageController(initialPage: index);
@@ -36,30 +42,29 @@ class _PhotoViewGalleryWidgetState extends State<PhotoViewGalleryWidget> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     currentIndex = widget.index;
   }
 
-  Widget _buildBottomSheetWidget(context, {required Widget child, bool hasSonComment = false}) {
-    return GestureDetector(
-      onLongPress: () {
-        saveImage();
-       },
+  Widget _buildBottomSheetWidget(context,
+      {required Widget child}) {
+    return InkWell(
+      onTap: () => saveImage(),
       child: child,
     );
   }
 
   saveImage() async {
     try {
-      String downloadUrl = widget.images![currentIndex]!;
+      String downloadUrl = widget.images![currentIndex];
       String suffix = getFileName(downloadUrl);
-      final path = '${Directory.systemTemp.path}/$suffix';
+      final cacheDirectory = await getApplicationCacheDirectory();
+      final path = '${cacheDirectory.path}/download/$suffix';
       print('path: $path');
       await Dio().download(downloadUrl, path);
       await Gal.putImage(path, album: 'save');
     } catch (e) {
-       print('error: $e');
+      print('error: $e');
     }
   }
 
@@ -77,14 +82,10 @@ class _PhotoViewGalleryWidgetState extends State<PhotoViewGalleryWidget> {
     return fileName;
   }
 
-
-  share() {
-    // ToastUtil.showToast(msg: 'Not Done');
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: Stack(
         children: <Widget>[
           Positioned(
@@ -92,12 +93,13 @@ class _PhotoViewGalleryWidgetState extends State<PhotoViewGalleryWidget> {
             left: 0,
             bottom: 0,
             right: 0,
-            child: Container(
-                child: _buildBottomSheetWidget(context, child:PhotoViewGallery.builder(
+            child: PhotoViewGallery.builder(
               scrollPhysics: const BouncingScrollPhysics(),
               builder: (BuildContext context, int index) {
                 return PhotoViewGalleryPageOptions(
-                  imageProvider: NetworkImage(widget.images?[index] ?? ''),
+                  imageProvider: widget.isLocalPhoto
+                      ? FileImage(File(widget.images![index]))
+                      :  NetworkImage(widget.images?[index] ?? ''),
                   heroAttributes: widget.heroTag != null
                       ? PhotoViewHeroAttributes(tag: widget.heroTag!)
                       : null,
@@ -112,7 +114,7 @@ class _PhotoViewGalleryWidgetState extends State<PhotoViewGalleryWidget> {
                   currentIndex = index;
                 });
               },
-            ))),
+            ),
           ),
           Positioned(
             //图片index显示
@@ -120,7 +122,7 @@ class _PhotoViewGalleryWidgetState extends State<PhotoViewGalleryWidget> {
             width: MediaQuery.of(context).size.width,
             child: Center(
               child: Text("${currentIndex + 1}/${widget.images?.length}",
-                  style: TextStyle(color: Colors.white, fontSize: 16)),
+                  style: const TextStyle(color: Colors.white, fontSize: 16)),
             ),
           ),
           Positioned(
@@ -128,7 +130,7 @@ class _PhotoViewGalleryWidgetState extends State<PhotoViewGalleryWidget> {
             right: 10,
             top: MediaQuery.of(context).padding.top,
             child: IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.close,
                 size: 30,
                 color: Colors.white,
@@ -138,6 +140,12 @@ class _PhotoViewGalleryWidgetState extends State<PhotoViewGalleryWidget> {
               },
             ),
           ),
+
+          Positioned(
+              bottom: 40,
+              right: 40,
+              child: _buildBottomSheetWidget(context, child: const Icon(Icons.save, size: 20, color: Colors.white))
+          )
         ],
       ),
     );
